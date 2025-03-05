@@ -5,6 +5,7 @@ Todoist Tizen Wearable client
 <img src="screenshots\1.png" alt="" width="200"/>
 <img src="screenshots\2.png" alt="" width="200"/>
 <img src="screenshots\3.png" alt="" width="200"/>
+<br/>
 <img src="screenshots\4.png" alt="" width="200"/>
 <img src="screenshots\5.png" alt="" width="200"/>
 <img src="screenshots\6.png" alt="" width="200"/>
