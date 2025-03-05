@@ -1,5 +1,5 @@
 # TaskGear
-Todoist Tizen Wearable client
+## Todoist Tizen Wearable client
 
 <div>
 <img src="screenshots\1.png" alt="" width="200"/>
