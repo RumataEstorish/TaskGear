@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownTag -->
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="description" content="Unofficial Todoist client"/>
+
+    <title>TaskGear</title>
+
+    <link rel="stylesheet" href="lib/tau/wearable/theme/default/tau.min.css"/>
+    <link rel="stylesheet" media="all and (-tizen-geometric-shape: circle)"
+          href="lib/tau/wearable/theme/default/tau.circle.min.css">
+
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" media="all and (-tizen-geometric-shape: circle)"
+          href="css/style.circle.css">
+
+
+    <script type="text/javascript" src="js/libs/circle-helper.js"></script>
+
+    <script type="text/javascript" src="js/libs/dexie-2.0.4.min.js"></script>
+
+    <script type="text/javascript" src="js/localization.js"></script>
+    <script type="text/javascript" src="js/todoist/tree.js"></script>
+    <script type="text/javascript" src="js/ui/sortOrder.js"></script>
+    <script type="text/javascript" src="js/ui/view.js"></script>
+    <script type="text/javascript" src="js/libs/log-1.0.1.1.js"></script>
+    <script type="text/javascript" src="js/GearHttp/androidHttpRequest.js"></script>
+    <script type="text/javascript" src="js/GearHttp/requestHeader.js"></script>
+    <script type="text/javascript" src="js/GearHttp/androidRequestData.js"></script>
+    <script type="text/javascript" src="js/GearHttp/gearHttp-1.3.0.0.js"></script>
+    <script type="text/javascript" src="js/libs/jquery-3.6.3.min.js"></script>
+    <script type="text/javascript" src="js/libs/sap-2.0.3.6.js"></script>
+    <script type="text/javascript" src="lib/tau/wearable/js/tau.min.js"></script>
+    <script type="text/javascript" src="js/libs/contextMenu-1.0.2.0.js"></script>
+    <script type="text/javascript" src="js/libs/actionMenu-2.2.0.js"></script>
+    <script type="text/javascript" src="js/libs/toastMessage-1.2.0.js"></script>
+    <script type="text/javascript" src="js/domain/requestrepository.js"></script>
+    <script type="text/javascript" src="js/todoist/todoist.js"></script>
+    <script type="text/javascript" src="js/todoist/todoist.labels.js"></script>
+    <script type="text/javascript" src="js/todoist/todoist.projects.js"></script>
+    <script type="text/javascript" src="js/todoist/todoist.tasks.js"></script>
+    <script type="text/javascript" src="js/ui/editTaskData.js"></script>
+    <script type="text/javascript" src="js/libs/utils-2.1.8.js"></script>
+    <script type="text/javascript" src="js/ui/settings.js"></script>
+
+    <script type="text/javascript" src="js/todoist/colors.js"></script>
+    <script type="text/javascript" src="js/ui/main/states/state.js"></script>
+    <script type="text/javascript" src="js/ui/main/states/editPageState.js"></script>
+    <script type="text/javascript" src="js/ui/main/states/errorState.js"></script>
+    <script type="text/javascript" src="js/ui/main/states/mainMenuState.js"></script>
+    <script type="text/javascript" src="js/ui/main/states/mainState.js"></script>
+    <script type="text/javascript" src="js/ui/main/states/navigationState.js"></script>
+    <script type="text/javascript" src="js/ui/main/states/selectViewState.js"></script>
+    <script type="text/javascript" src="js/ui/main/states/updateTaskCheckState.js"></script>
+
+    <script type="text/javascript" src="js/ui/main/mainViewModel.js"></script>
+    <script type="text/javascript" src="js/di/mainmodule.js"></script>
+    <script type="text/javascript" src="js/ui/main/main.js"></script>
+
+    <script type="text/javascript" src="js/libs/list-1.0.1.js"></script>
+
+
+    <script type="text/javascript" src="js/input/typeGear-1.0.0.js"></script>
+    <script type="text/javascript" src="js/input/input-1.1.1.js"></script>
+
+
+    <script src="locales/en-us/language.js"></script>
+    <!--suppress HtmlUnknownTarget -->
+    <script src="language.js"></script>
+</head>
+
+<body>
+
+<div class="ui-page" id="transitionPage"></div>
+
+<div class="ui-page" id="pageCircleProgressBar"
+     data-enable-page-scroll="false">
+    <div class="ui-content content-padding">
+        <div class="result" id="result"></div>
+        <progress class="ui-circle-progress" id="circleprogress" max="100"
+                  value="20"></progress>
+        <!-- <div id="circleProgressDescription" class="ui-processing-text"></div> -->
+    </div>
+</div>
+
+<div class="ui-page ui-page-active" id="smallProcessingPage">
+    <div class="ui-content content-padding">
+        <div class="small-processing-container">
+            <div class="ui-processing" style="visibility: hidden;"></div>
+            <div id="smallProcessingDescription" class="ui-processing-text"></div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        (function () {
+            var page = document.getElementById("smallProcessingPage");
+            page.addEventListener("pageshow", function (event) {
+                var page = event.target, processing = page.querySelector(".ui-processing");
+                processing.style.visibility = "";
+            }, false);
+
+            page.addEventListener("pagebeforehide", function (event) {
+                var page = event.target, processing = page.querySelector(".ui-processing");
+                processing.style.visibility = "hidden";
+            }, false);
+        }());
+    </script>
+</div>
+
+<div id="mainMenuPage" class="ui-page">
+    <header class="ui-header">
+        <h2 class="ui-title"></h2>
+    </header>
+    <div class="ui-content"></div>
+</div>
+
+<div id="viewMenuPage" class="ui-page"></div>
+
+<div id="taskEditPage" class="ui-page">
+    <header class="ui-header">
+        <h2 class="ui-title"></h2>
+    </header>
+    <div class="ui-content">
+        <ul class="ui-listview">
+            <li class="li-has-multiline" id="taskContent"
+                onclick="editTaskContentClick()">
+                <label>
+                    <span class="ui-li-sub-text li-text-sub"></span>
+                </label>
+            </li>
+            <li class="li-has-multiline" id="taskProject"
+                onclick="pickTaskProject()">
+                <label>
+                    <span class="ui-li-sub-text li-text-sub"></span>
+                </label>
+            </li>
+            <li class="li-has-multiline" id="taskDate" onclick="pickTaskDate()">
+                <label>
+                    <span class="ui-li-sub-text li-text-sub"></span>
+                </label>
+            </li>
+        </ul>
+    </div>
+    <footer class="ui-footer ui-bottom-button">
+        <button id="okButton" onclick="editTaskConfirm()" class="ui-btn"></button>
+    </footer>
+</div>
+
+<input id="dateInput" style="visibility: hidden; width: 50px"
+       type="date"/>
+
+<div id="dueDatePage" class="ui-page">
+    <header class="ui-header">
+        <h2 class="ui-title"></h2>
+    </header>
+    <div class="ui-content">
+        <ul class="ui-listview">
+            <li id="todayDate" onclick="confirmDate('TODAY')"></li>
+            <li id="tomorrowDate" onclick="confirmDate('TOMORROW')"></li>
+            <li id="nextWeekDate" onclick="confirmDate('NEXT_WEEK')"></li>
+            <li id="pickDate" onclick="pickDate()"></li>
+            <li id="removeDate" onclick="confirmDate('REMOVE')"></li>
+        </ul>
+    </div>
+</div>
+
+
+<div id="postponePage" class="ui-page">
+    <header class="ui-header">
+        <h2 class="ui-title"></h2>
+    </header>
+    <div class="ui-content">
+        <ul class="ui-listview">
+            <li id="todayPostpone" onclick="postponeDate('TODAY')"></li>
+            <li id="tomorrowPostpone" onclick="postponeDate('TOMORROW')"></li>
+            <li id="nextWeekPostpone" onclick="postponeDate('NEXT_WEEK')"></li>
+            <li id="pickDatePostpone" onclick="pickDatePostpone()"></li>
+            <li id="removeDatePostpone" onclick="postponeDate('REMOVE')"></li>
+        </ul>
+    </div>
+</div>
+
+<div id="tasksPage" class="ui-page">
+    <header class="ui-header ui-has-more">
+        <h2 class="ui-title"></h2>
+    </header>
+    <div class="ui-content">
+        <button type="button" style="z-index: 50"
+                onclick="openMainMenuClick()" class="ui-more"></button>
+        <ul class="ui-listview">
+        </ul>
+    </div>
+    <div id="taskProcessing" class="ui-processing ui-processing-full-size"></div>
+</div>
+
+<div id="projectsPage" class="ui-page">
+    <header class="ui-header ui-has-more">
+        <h2 class="ui-title"></h2>
+    </header>
+    <button type="button" style="z-index: 1000"
+            onclick="openMainMenuClick()" class="ui-more"></button>
+    <div class="ui-content">
+        <ul id="projectsList" class="ui-listview">
+
+        </ul>
+    </div>
+</div>
+
+<div id="pickProjectsPage" class="ui-page">
+    <header class="ui-header">
+        <h2 class="ui-title"></h2>
+    </header>
+    <div class="ui-content">
+        <ul class="ui-listview">
+
+        </ul>
+    </div>
+</div>
+
+<div id="settingsPage" class="ui-page">
+    <header class="ui-header">
+        <h2 class="ui-title"></h2>
+    </header>
+    <div class="ui-content">
+        <ul class="ui-listview">
+            <li id="sortCreatedFirst" class="li-has-toggle li-has-multiline">
+                <label>
+                    <span class="li-text-sub ui-li-sub-text"></span>
+                    <div class="ui-toggleswitch">
+                        <input type="checkbox" class="ui-switch-input"/>
+                        <div class="ui-switch-button"></div>
+                    </div>
+                </label>
+            </li>
+            <li class="li-has-multiline">
+                <a href="#" id="sortCreated">
+                    <span class="ui-li-sub-text li-text-sub"></span>
+                </a>
+            </li>
+            <li id="fullSync" class="li-has-multiline">
+                <a href="#">
+                    <span class="ui-li-sub-text li-text-sub"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div id="chooseStartupPage" class="ui-page">
+    <header class="ui-header">
+        <h2 class="ui-title"></h2>
+    </header>
+    <div class="ui-content">
+        <ul class="ui-listview">
+            <li class="li-has-radio"><label id="todayStartup"><input
+                    name="startup" type="radio" onclick="changeStartupClick('TODAY')"/></label></li>
+            <li class="li-has-radio"><label id="nextWeekStartup"><input
+                    name="startup" type="radio"
+                    onclick="changeStartupClick('NEXT_WEEK')"/></label></li>
+            <li class="li-has-radio"><label id="projectsStartup"><input
+                    name="startup" type="radio"
+                    onclick="changeStartupClick('PROJECTS')"/></label></li>
+            <li class="li-has-radio"><label id="labelsStartup"><input
+                    name="startup" type="radio" onclick="changeStartupClick('LABELS')"/></label></li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

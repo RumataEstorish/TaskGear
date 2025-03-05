@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="https://sites.google.com/site/gearapplications/taskgear" version="3.0.0" viewmodes="maximized">
+    <access origin="*" subdomains="true"/>
+    <tizen:application id="NTX6vuNrli.TaskGear" package="NTX6vuNrli" required_version="2.2"/>
+    <author href="https://sites.google.com/view/gearsoftware/applications/taskgear" email="rumataestorish@yandex.ru">Rumata</author>
+    <content src="index.html"/>
+    <description>Unofficial Todoist client</description>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+    <icon src="icon.png"/>
+    <tizen:metadata key="AccessoryServicesLocation" value="res/xml/accessoryservices.xml"/>
+    <tizen:metadata key="master_app_name" value="GearHub"/>
+    <tizen:metadata key="master_app_packagename" value="petbotproject.gearhub"/>
+    <tizen:metadata key="master_app_min_version" value="1"/>
+    <tizen:metadata key="master_app_playstore_deeplink" value="market://details?id=petbotproject.gearhub"/>
+    <tizen:metadata key="master_app_auto_uninstallation" value="no"/>
+    <name>TaskGear</name>
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <tizen:privilege name="http://developer.samsung.com/privilege/accessoryprotocol"/>
+    <tizen:privilege name="http://tizen.org/privilege/filesystem.read"/>
+    <tizen:privilege name="http://tizen.org/privilege/filesystem.write"/>
+    <tizen:privilege name="http://tizen.org/privilege/unlimitedstorage"/>
+    <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
+    <tizen:profile name="wearable"/>
+    <tizen:setting background-support="enable" encryption="disable" hwkey-event="enable"/>
+</widget>
